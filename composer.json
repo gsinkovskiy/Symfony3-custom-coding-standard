@@ -3,7 +3,7 @@
     "type": "coding-standard",
     "description": "Customized CodeSniffer ruleset for the ITWorks Soft projects",
     "keywords": ["Symfony3", "coding standard", "phpcs"],
-    "homepage": "https://github.com/gsinkovskiy/Symfony3-custom-coding-standard",
+    "homepage": "https://github.com/gsinkovskiy/itworks-coding-standard",
     "license": "MIT",
     "authors": [
         {
