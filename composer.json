@@ -1,7 +1,7 @@
 {
-    "name": "gsinkovskiy/symfony3-custom-coding-standard",
+    "name": "gsinkovskiy/itworks-coding-standard",
     "type": "coding-standard",
-    "description": "Customized CodeSniffer ruleset for the Symfony3 projects",
+    "description": "Customized CodeSniffer ruleset for the ITWorks Soft projects",
     "keywords": ["Symfony3", "coding standard", "phpcs"],
     "homepage": "https://github.com/gsinkovskiy/Symfony3-custom-coding-standard",
     "license": "MIT",
@@ -9,10 +9,6 @@
         {
             "name": "Glib Synkovskyi",
             "email": "gleb.sinkovskiy@gmail.com"
-        },
-        {
-            "name": "David Joos",
-            "email": "david.joos@escapestudios.com"
         }
     ],
     "extra": {
