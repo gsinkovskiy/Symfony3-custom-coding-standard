@@ -39,12 +39,12 @@ The path is relative to the php_codesniffer install path. This is important to m
 
 5. Done!
 
-       bin/phpcs --standard=Symfony3Custom /path/to/code
+       bin/phpcs --standard=ITWorks /path/to/code
        
 6. (optional) Set up PHPStorm
 
 - configure code sniffer under Languages & Frameworks -> PHP -> Code Sniffer
-- Go to Editor -> Inspections -> PHP Code sniffer, refresh the standards and select Symfony3Custom
+- Go to Editor -> Inspections -> PHP Code sniffer, refresh the standards and select ITWorks
        
 ## Customizations
 
