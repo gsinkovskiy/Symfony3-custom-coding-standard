@@ -133,7 +133,7 @@ class ITWorks_Sniffs_Commenting_FunctionCommentSniff
      * @param int                  $stackPtr
      * @param int                  $commentStart
      */
-    protected function processWhitespace(PHP_CodeSniffer_File $phpcsFile, int $stackPtr, int $commentStart)
+    protected function processWhitespace(PHP_CodeSniffer_File $phpcsFile, $stackPtr, $commentStart)
     {
         $tokens = $phpcsFile->getTokens();
         $before = $phpcsFile->findPrevious(T_WHITESPACE, ($commentStart - 1), null, true);
