@@ -11,6 +11,11 @@
             "email": "gleb.sinkovskiy@gmail.com"
         }
     ],
+    "autoload": {
+        "psr-4": {
+            "ITWorks\\": "ITWorks/"
+        }
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "2.x-dev"
