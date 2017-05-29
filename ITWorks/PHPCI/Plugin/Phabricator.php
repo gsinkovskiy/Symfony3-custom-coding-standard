@@ -8,6 +8,7 @@ use Symfony\Component\Yaml\Parser as YamlParser;
 use PHPCI\Plugin as BaseInterface;
 use b8\Store\Factory;
 use PHPCI\Store\BuildErrorStore;
+use PHPCI\Model\BuildError;
 
 class Phabricator implements BaseInterface
 {
@@ -28,6 +29,21 @@ class Phabricator implements BaseInterface
 	protected $store;
 
 	/**
+	 * @var string
+	 */
+	protected $projectCallsign;
+
+	/**
+	 * @var string
+	 */
+	protected $clientUrl;
+
+	/**
+	 * @var string
+	 */
+	protected $clientToken;
+
+	/**
 	 * Set up the plugin, configure options, etc.
 	 *
 	 * @param Builder $phpci
@@ -38,8 +54,23 @@ class Phabricator implements BaseInterface
 	{
 		$this->phpci = $phpci;
 		$this->build = $build;
-
 		$this->store = Factory::getStore('BuildError');
+
+		if (!isset($options['project_callsign'])) {
+			throw new \LogicException('Option "project_callsign" should be set.');
+		}
+
+		if (!isset($options['url'])) {
+			throw new \LogicException('Option "url" should be set.');
+		}
+
+		if (!isset($options['token'])) {
+			throw new \LogicException('Option "token" should be set.');
+		}
+
+		$this->projectCallsign = $options['project_callsign'];
+		$this->clientUrl = $options['url'];
+		$this->clientToken = $options['token'];
 	}
 
 	/**
@@ -50,11 +81,25 @@ class Phabricator implements BaseInterface
 	public function execute()
 	{
 		$errors = $this->store->getErrorsForBuild($this->build->getId());
+		$result = [];
+		$result['buildTargetPHID'] = $this->build->getCommitterEmail();
+		$result['type'] = $this->build->isSuccessful() ? 'pass' : 'fail';
+		$result['lint'] = [];
 
 		/** @var BuildError $error */
 		foreach ($errors as $error) {
-
+			$result['lint'][] = [
+				'name' => $error->getMessage(),
+				'code' => 'CI'.$error->getId(),
+				'severity' => $error->getSeverity() <= BuildError::SEVERITY_HIGH ? 'error': 'warning',
+				'path' => $error->getFile(),
+				'line' => intval($error->getLineStart()),
+			];
 		}
+
+		$command = "echo '".json_encode($result)."' | arc call-conduit --conduit-uri {$this->clientUrl} --conduit-token {$this->clientToken} harbormaster.sendmessage";
+
+		return $this->phpci->executeCommand($command);
 	}
 
 }
