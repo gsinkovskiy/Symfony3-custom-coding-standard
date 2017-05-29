@@ -21,8 +21,26 @@
             "dev-master": "2.x-dev"
         }
     },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "phacility/libphutil",
+                "version": "dev-master",
+                "source": {
+                    "type": "git",
+                    "url": "https://github.com/phacility/libphutil.git",
+                    "reference": "master"
+                },
+                "autoload": {
+                    "classmap": ["src/"]
+                }
+            }
+        }
+    ],
     "minimum-stability": "dev",
     "require": {
-        "squizlabs/php_codesniffer": "~2.0"
+        "squizlabs/php_codesniffer": "~2.0",
+        "phacility/libphutil": "dev-master"
     }
 }

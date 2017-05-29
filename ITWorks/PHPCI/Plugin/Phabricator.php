@@ -6,14 +6,26 @@ use PHPCI\Builder;
 use PHPCI\Model\Build;
 use Symfony\Component\Yaml\Parser as YamlParser;
 use PHPCI\Plugin as BaseInterface;
+use b8\Store\Factory;
+use PHPCI\Store\BuildErrorStore;
 
 class Phabricator implements BaseInterface
 {
 
-	protected $directory;
+	/**
+	 * @var Builder
+	 */
 	protected $phpci;
+
+	/**
+	 * @var Build
+	 */
 	protected $build;
-	protected $commandList = array();
+
+	/**
+	 * @var BuildErrorStore
+	 */
+	protected $store;
 
 	/**
 	 * Set up the plugin, configure options, etc.
@@ -26,10 +38,8 @@ class Phabricator implements BaseInterface
 	{
 		$this->phpci = $phpci;
 		$this->build = $build;
-		$this->directory = $phpci->buildPath;
-		if (isset($options['commands'])) {
-			$this->commandList = $options['commands'];
-		}
+
+		$this->store = Factory::getStore('BuildError');
 	}
 
 	/**
@@ -39,28 +49,12 @@ class Phabricator implements BaseInterface
 	 */
 	public function execute()
 	{
-		$success = true;
-		foreach ($this->commandList as $command) {
-			if (!$this->runSingleCommand($command)) {
-				$success = false;
-				break;
-			}
+		$errors = $this->store->getErrorsForBuild($this->build->getId());
+
+		/** @var BuildError $error */
+		foreach ($errors as $error) {
+
 		}
-		return $success;
-	}
-
-	/**
-	 * Run one command
-	 *
-	 * @param string $command command for cymfony
-	 *
-	 * @return boolean
-	 */
-	public function runSingleCommand($command)
-	{
-		$cmd = 'php ' . $this->directory . 'bin/console ';
-
-		return $this->phpci->executeCommand($cmd . $command, $this->directory);
 	}
 
 }
