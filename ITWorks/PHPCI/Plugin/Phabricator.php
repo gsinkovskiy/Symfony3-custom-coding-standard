@@ -44,6 +44,11 @@ class Phabricator implements BaseInterface
 	protected $clientToken;
 
 	/**
+	 * @var string
+	 */
+	protected $arcPath;
+
+	/**
 	 * Set up the plugin, configure options, etc.
 	 *
 	 * @param Builder $phpci
@@ -68,9 +73,14 @@ class Phabricator implements BaseInterface
 			throw new \LogicException('Option "token" should be set.');
 		}
 
+		if (!isset($options['arc_path'])) {
+			throw new \LogicException('Option "arc_path" should be set.');
+		}
+
 		$this->projectCallsign = $options['project_callsign'];
 		$this->clientUrl = $options['url'];
 		$this->clientToken = $options['token'];
+		$this->arcPath = $options['arc_path'];
 	}
 
 	/**
@@ -97,7 +107,7 @@ class Phabricator implements BaseInterface
 			];
 		}
 
-		$command = "echo '".json_encode($result)."' | arc call-conduit --conduit-uri {$this->clientUrl} --conduit-token {$this->clientToken} harbormaster.sendmessage";
+		$command = "echo '".json_encode($result)."' | {$this->arcPath} call-conduit --conduit-uri {$this->clientUrl} --conduit-token {$this->clientToken} harbormaster.sendmessage";
 
 		return $this->phpci->executeCommand($command);
 	}
