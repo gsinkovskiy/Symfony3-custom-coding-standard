@@ -18,11 +18,10 @@ class PostSnifferResultCommand extends Command
 	{
 		$this
 			// the name of the command (the part after "bin/console")
-			->setName('itw:post-sniffer-result')
+			->setName('itw:code-sniffer')
 
 			// the short description shown while running "php bin/console list"
-			->setDescription('Post sniffer results to bitbucket.')
-			->addArgument('report', InputArgument::REQUIRED, 'Path to JSON report')
+			->setDescription('Run phpcs and post sniffer results to bitbucket.')
 			->addArgument('username', InputArgument::REQUIRED, 'Bitbucket username')
 			->addArgument('password', InputArgument::REQUIRED, 'Bitbucket password')
 			->addArgument('owner', InputArgument::REQUIRED, 'Bitbucket repo owner')
@@ -33,10 +32,53 @@ class PostSnifferResultCommand extends Command
 
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		$reportFile = $input->getArgument('report');
+		$io = new SymfonyStyle($input, $output);
+		$commit = $input->getArgument('commit');
+		$cmd = 'git diff-tree --no-commit-id --name-only -r '.$commit;
+		exec($cmd, $out, $return);
+
+		if ( $return !== 0 ) {
+			$io->error('Error executing git: ' . $cmd);
+			$io->writeln($out);
+
+			return 1;
+		}
+
+		$out = array_filter($out, function ($file) {
+			return substr($file, -4) === '.php';
+		});
+
+		$listFile = 'phpcs_files';
+		$return = file_put_contents($listFile, implode("\n", $out));
+
+		if ( $return === false ) {
+			$io->error('Error writing ' . $listFile . ':');
+			$io->writeln($out);
+
+			return 1;
+		}
+
+		unset($out);
+		$cmd = 'vendor/bin/phpcs --config-set installed_paths vendor/gsinkovskiy/itworks-coding-standard';
+		exec($cmd, $out, $return);
+
+		if ( $return !== 0 ) {
+			$io->error('Error configuring phpcs: ' . $cmd);
+			$io->writeln($out);
+
+			return 1;
+		}
+
+		unset($out);
+		$reportFile = 'phpcs.json';
+		$cmd = 'vendor/bin/phpcs --report-json='.$reportFile.' --standard=ITWorks --file-list=' . $listFile;
+		exec($cmd, $out, $return);
 
 		if ( !is_readable($reportFile) ) {
-			throw new \InvalidArgumentException('File "'.$reportFile.' is not exists or not readable.');
+			$io->error('Error running phpcs: ' . $cmd);
+			$io->writeln($out);
+
+			return 1;
 		}
 
 		$reportFile = realpath($reportFile);
@@ -47,9 +89,7 @@ class PostSnifferResultCommand extends Command
 		$changeSets->setCredentials(new Basic($input->getArgument('username'), $input->getArgument('password')));
 		$owner = $input->getArgument('owner');
 		$repo = $input->getArgument('repo');
-		$commit = $input->getArgument('commit');
 		$hasErrors = false;
-		$io = new SymfonyStyle($input, $output);
 
 		foreach ($report['files'] as $filename => $fileInfo) {
 			$filename = substr($filename, $projectPathLength);
@@ -75,6 +115,9 @@ class PostSnifferResultCommand extends Command
 				);
 			}
 		}
+
+		unlink($reportFile);
+		unlink($listFile);
 
 		return $hasErrors ? 1 : 0;
 	}
