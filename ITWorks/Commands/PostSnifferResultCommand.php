@@ -48,6 +48,12 @@ class PostSnifferResultCommand extends Command
 			return substr($file, -4) === '.php';
 		});
 
+        if (count($out) == 0) {
+            $io->note('Nothing to sniff');
+
+            return 0;
+        }
+
 		$listFile = 'phpcs_files';
 		$return = file_put_contents($listFile, implode("\n", $out));
 
