@@ -53,7 +53,7 @@ class PostSnifferResultCommand extends Command
 
 			foreach ($fileInfo['messages'] as $messageInfo) {
 				$message = 'PHPCS ' . $messageInfo['type'] . ' at column ' . $messageInfo['column'] . ': ';
-				$message .= $messageInfo['message'] . ' (' . $messageInfo['source'] .')';
+				$message .= $messageInfo['message'] . ' (' . $messageInfo['source'] . ')';
 				$changeSets->comments()->create(
 					$owner,
 					$repo,
