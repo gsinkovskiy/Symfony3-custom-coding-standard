@@ -10,6 +10,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class PostSnifferResultCommand extends Command
 {
@@ -47,11 +48,22 @@ class PostSnifferResultCommand extends Command
 		$owner = $input->getArgument('owner');
 		$repo = $input->getArgument('repo');
 		$commit = $input->getArgument('commit');
+		$hasErrors = false;
+		$io = new SymfonyStyle($input, $output);
 
 		foreach ($report['files'] as $filename => $fileInfo) {
 			$filename = substr($filename, $projectPathLength);
 
+			if (count($fileInfo['messages']) > 0) {
+				$io->section('File: ' . $filename);
+			}
+
 			foreach ($fileInfo['messages'] as $messageInfo) {
+				$hasErrors = true;
+				$outMessage = '<info>Line ' . $messageInfo['line'] . ':</info> ';
+				$outMessage .= $messageInfo['message'] . ' at column ' . $messageInfo['column'];
+				$io->writeln($outMessage);
+
 				$message = 'PHPCS ' . $messageInfo['type'] . ' at column ' . $messageInfo['column'] . ': ';
 				$message .= $messageInfo['message'] . ' (' . $messageInfo['source'] . ')';
 				$changeSets->comments()->create(
@@ -63,5 +75,7 @@ class PostSnifferResultCommand extends Command
 				);
 			}
 		}
+
+		return $hasErrors ? 1 : 0;
 	}
 }
